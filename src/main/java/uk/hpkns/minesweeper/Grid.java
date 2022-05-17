@@ -94,7 +94,7 @@ public class Grid {
         if (y < 0 || y >= height) throw new OutOfGridException();
 
         if (isUncovered(x, y)) return;
-        if (isFlagged(x, y)) grid[y][x] -= FLAG;
+        if (isFlagged(x, y)) return;
 
         grid[y][x] += UNCOVERED;
 
