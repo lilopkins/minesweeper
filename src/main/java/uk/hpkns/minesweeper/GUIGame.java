@@ -21,7 +21,6 @@ import static uk.hpkns.minesweeper.Grid.NUMBER;
 
 public class GUIGame extends Application {
 
-
     public static final URL FLAG = Objects.requireNonNull(GUIGame.class.getResource("/flag.png"));
     public static final URL MINE = Objects.requireNonNull(GUIGame.class.getResource("/mine.png"));
     public static final double BUTTON_SIZE = 32d;
@@ -29,6 +28,7 @@ public class GUIGame extends Application {
     private Grid grid;
     Button[][] btnGrid;
     private boolean gameOver;
+    private long gameStartTime;
 
     @Override
     public void start(Stage stage) {
@@ -63,6 +63,7 @@ public class GUIGame extends Application {
 
     private void initialiseGrid(GridPane gridPane) {
         gameOver = false;
+        gameStartTime = 0;
         grid = new Grid(16);
         gridPane.getChildren().clear();
         btnGrid = new Button[grid.getHeight()][];
@@ -79,6 +80,8 @@ public class GUIGame extends Application {
                 btn.setOnAction(e -> {
                     if (gameOver) return;
                     if (grid.isFlagged(finalX, finalY)) return;
+
+                    if (gameStartTime == 0) gameStartTime = System.currentTimeMillis();
 
                     grid.uncover(finalX, finalY);
                     updateButtonGrid();
@@ -97,10 +100,11 @@ public class GUIGame extends Application {
                     // End game with win if everything uncovered
                     if (grid.allUncovered()) {
                         gameOver = true;
+                        long completionTimeMillis = System.currentTimeMillis() - gameStartTime;
                         Alert alert = new Alert(Alert.AlertType.INFORMATION);
                         alert.setTitle("You won!");
                         alert.setHeaderText("You won!");
-                        alert.setContentText("You won the game!");
+                        alert.setContentText(String.format("You won the game in %.2f seconds!", ((float) completionTimeMillis) / 1000));
                         alert.showAndWait();
                     }
                 });
