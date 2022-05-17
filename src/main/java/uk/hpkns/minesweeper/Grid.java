@@ -99,17 +99,16 @@ public class Grid {
 
         if ((grid[y][x] & NUMBER) == 0) {
             // Uncover nearby
-            uncoverIgnoreError(x - 1, y);
-            uncoverIgnoreError(x + 1, y);
-            uncoverIgnoreError(x, y - 1);
-            uncoverIgnoreError(x, y + 1);
-        }
-    }
+            for (int i = -1; i <= 1; i++) {
+                for (int j = -1; j <= 1; j++) {
+                    if (i == 0 && j == 0) continue;
+                    try {
+                        uncover(x + i, y + j);
+                    } catch (OutOfGridException ignored) { }
+                }
+            }
 
-    private void uncoverIgnoreError(int x, int y) {
-        try {
-            uncover(x, y);
-        } catch (OutOfGridException ignored) { }
+        }
     }
 
     /**
