@@ -6,7 +6,7 @@ public class Main {
         if (System.getenv().containsKey("TERM")) {
             TerminalGame.start(10);
         } else {
-            GUIGame.startGame(10);
+            GUIGame.startGame();
         }
     }
 }
