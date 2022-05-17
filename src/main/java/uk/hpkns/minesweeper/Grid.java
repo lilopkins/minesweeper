@@ -24,7 +24,7 @@ public class Grid {
     }
 
     public Grid(int width, int height) {
-        this(width, height, width * height / 40);
+        this(width, height, width * height / 10);
     }
 
     public Grid(int width, int height, int mines) {
@@ -45,6 +45,8 @@ public class Grid {
      */
     private void generateGame(int safeX, int safeY) {
         if (initialised) throw new AlreadyInitialisedException();
+        initialised = true;
+
         // Randomise mine positions
         Random rng = new Random();
 
@@ -76,8 +78,6 @@ public class Grid {
                 grid[y][x] = number;
             }
         }
-
-        initialised = true;
     }
 
     /**
@@ -177,6 +177,58 @@ public class Grid {
         if (y < 0 || y >= height) throw new OutOfGridException();
 
         return (grid[y][x] & FLAG) == FLAG;
+    }
+
+    /**
+     * Uncover all the mines on the grid
+     */
+    public void uncoverAllMines() {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (isMine(x, y) && !isUncovered(x, y))
+                    grid[y][x] += UNCOVERED;
+            }
+        }
+    }
+
+    /**
+     * Check if all non-mines are uncovered
+     * @return True is game is in this complete state
+     */
+    public boolean allUncovered() {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (!(isMine(x, y) || isUncovered(x, y)))
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Get the width of the grid.
+     * @return The width.
+     */
+    public int getWidth() {
+        return width;
+    }
+
+    /**
+     * Get the height of the grid.
+     * @return The height.
+     */
+    public int getHeight() {
+        return height;
+    }
+
+    /**
+     * Get the data at the given position.
+     * @param x Grid position X
+     * @param y Grid position Y
+     * @return The data.
+     */
+    public byte get(int x, int y) {
+        return grid[y][x];
     }
 
     /**
