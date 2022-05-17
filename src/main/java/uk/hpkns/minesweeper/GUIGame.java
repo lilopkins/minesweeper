@@ -7,17 +7,25 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+import java.net.URL;
+import java.util.Objects;
+
 import static uk.hpkns.minesweeper.Grid.NUMBER;
 
 public class GUIGame extends Application {
 
+
+    public static final URL FLAG = Objects.requireNonNull(GUIGame.class.getResource("/flag.png"));
+    public static final URL MINE = Objects.requireNonNull(GUIGame.class.getResource("/mine.png"));
     public static final double BUTTON_SIZE = 32d;
+    public static final double ICON_SIZE = 16d;
     private Grid grid;
     Button[][] btnGrid;
     private boolean gameOver;
@@ -64,10 +72,13 @@ public class GUIGame extends Application {
                 Button btn = new Button();
                 btn.setMinWidth(BUTTON_SIZE);
                 btn.setMinHeight(BUTTON_SIZE);
+                btn.setMaxHeight(BUTTON_SIZE);
+                btn.setMaxWidth(BUTTON_SIZE);
                 int finalX = x;
                 int finalY = y;
                 btn.setOnAction(e -> {
                     if (gameOver) return;
+                    if (grid.isFlagged(finalX, finalY)) return;
 
                     grid.uncover(finalX, finalY);
                     updateButtonGrid();
@@ -108,8 +119,12 @@ public class GUIGame extends Application {
             for (int x = 0; x < grid.getWidth(); x++) {
                 btnGrid[y][x].setDisable(false);
                 btnGrid[y][x].setText(" ");
+                btnGrid[y][x].setGraphic(null);
                 if (grid.isFlagged(x, y)) {
-                    btnGrid[y][x].setText("F");
+                    ImageView img = new ImageView(FLAG.toExternalForm());
+                    img.setFitWidth(ICON_SIZE);
+                    img.setFitHeight(ICON_SIZE);
+                    btnGrid[y][x].setGraphic(img);
                     continue;
                 }
                 if (!grid.isUncovered(x, y)) {
@@ -117,7 +132,10 @@ public class GUIGame extends Application {
                 }
                 if (grid.isMine(x, y)) {
                     // Only for uncovered mines on game loss.
-                    btnGrid[y][x].setText("X");
+                    ImageView img = new ImageView(MINE.toExternalForm());
+                    img.setFitWidth(ICON_SIZE);
+                    img.setFitHeight(ICON_SIZE);
+                    btnGrid[y][x].setGraphic(img);
                     continue;
                 }
 
