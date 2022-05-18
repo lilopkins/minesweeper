@@ -16,19 +16,15 @@ public class TerminalGame {
             for (int x = 0; x < grid.getWidth(); x++) {
                 if (grid.isFlagged(x, y)) {
                     System.out.print(FLAG);
-                    continue;
-                }
-                if (!grid.isUncovered(x, y)) {
+                } else if (!grid.isUncovered(x, y)) {
                     System.out.print(COVERED);
-                    continue;
-                }
-                if (grid.isMine(x, y)) {
+                } else if (grid.isMine(x, y)) {
                     // Only for uncovered mines on game loss.
                     System.out.print(MINE);
-                    continue;
+                } else {
+                    byte pos = grid.get(x, y);
+                    System.out.print(pos & Grid.NUMBER);
                 }
-                byte pos = grid.get(x, y);
-                System.out.print(pos & Grid.NUMBER);
             }
             System.out.printf("  %d%n", y);
         }
@@ -40,6 +36,31 @@ public class TerminalGame {
             System.out.printf("%d", i / 10);
         }
         System.out.println();
+    }
+
+    private static boolean uncover(Grid grid, int x, int y) {
+        grid.uncover(x, y);
+        if (grid.isMine(x, y)) {
+            // Game loss! Uncover all mines.
+            grid.uncoverAllMines();
+            printGrid(grid);
+            System.out.println("BANG! You lost!");
+            return true;
+        }
+        if (grid.allUncovered()) {
+            // Game win!
+            printGrid(grid);
+            System.out.println("You won!");
+            return true;
+        }
+        return false;
+    }
+
+    private static int[] parseLocation(String input) throws NumberFormatException {
+        String[] parts = input.substring(1).split(",");
+        int x = Integer.parseInt(parts[0]);
+        int y = Integer.parseInt(parts[1]);
+        return new int[]{x, y};
     }
 
     public static void start(int size) {
@@ -54,43 +75,24 @@ public class TerminalGame {
             String input = scan.nextLine();
             if (input.startsWith("U")) {
                 // Uncover
-                String[] parts = input.substring(1).split(",");
-                int x;
-                int y;
                 try {
-                    x = Integer.parseInt(parts[0]);
-                    y = Integer.parseInt(parts[1]);
+                    int[] pos = parseLocation(input);
+                    boolean gameFinished = uncover(grid, pos[0], pos[1]);
+                    if (gameFinished)
+                        break;
                 } catch (NumberFormatException e) {
                     System.out.println(INVALID_INPUT);
                     continue;
-                }
-                grid.uncover(x, y);
-                if (grid.isMine(x, y)) {
-                    // Game loss! Uncover all mines.
-                    grid.uncoverAllMines();
-                    printGrid(grid);
-                    System.out.println("BANG! You lost!");
-                    break;
-                }
-                if (grid.allUncovered()) {
-                    // Game win!
-                    printGrid(grid);
-                    System.out.println("You won!");
-                    break;
                 }
             } else if (input.startsWith("F")) {
                 // Flag
-                String[] parts = input.substring(1).split(",");
-                int x;
-                int y;
                 try {
-                    x = Integer.parseInt(parts[0]);
-                    y = Integer.parseInt(parts[1]);
+                    int[] pos = parseLocation(input);
+                    grid.flag(pos[0], pos[1]);
                 } catch (NumberFormatException e) {
                     System.out.println(INVALID_INPUT);
                     continue;
                 }
-                grid.flag(x, y);
             } else {
                 // Do nothing...
                 System.out.println(INVALID_INPUT);
