@@ -12,6 +12,7 @@ public class Grid {
     public static final byte FLAG      = 0b0010_0000;
     public static final byte MINE      = 0b0001_0000;
     public static final byte NUMBER    = 0b0000_1111;
+    public static final Random RANDOM = new Random();
 
     private final byte[][] grid;
     private boolean initialised;
@@ -48,13 +49,11 @@ public class Grid {
         initialised = true;
 
         // Randomise mine positions
-        Random rng = new Random();
-
         for (int i = 0; i < mines; i++) {
             int x, y;
             do {
-                x = rng.nextInt(width);
-                y = rng.nextInt(height);
+                x = RANDOM.nextInt(width);
+                y = RANDOM.nextInt(height);
             } while (x == safeX && y == safeY);
 
             grid[y][x] = MINE;
