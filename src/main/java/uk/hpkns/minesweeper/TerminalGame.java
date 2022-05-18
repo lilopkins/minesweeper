@@ -7,6 +7,9 @@ public class TerminalGame {
     public static final String FLAG = "⚑";
     public static final String MINE = "╳";
     public static final String COVERED = "█";
+    public static final String INVALID_INPUT = "Invalid input! Try again!";
+
+    private TerminalGame() {}
 
     private static void printGrid(Grid grid) {
         for (int y = 0; y < grid.getHeight(); y++) {
@@ -27,7 +30,7 @@ public class TerminalGame {
                 byte pos = grid.get(x, y);
                 System.out.print(pos & Grid.NUMBER);
             }
-            System.out.printf("  %d\n", y);
+            System.out.printf("  %d%n", y);
         }
         for (int i = 0; i < grid.getWidth(); i++) {
             System.out.printf("%d", i % 10);
@@ -52,12 +55,13 @@ public class TerminalGame {
             if (input.startsWith("U")) {
                 // Uncover
                 String[] parts = input.substring(1).split(",");
-                int x, y;
+                int x;
+                int y;
                 try {
                     x = Integer.parseInt(parts[0]);
                     y = Integer.parseInt(parts[1]);
                 } catch (NumberFormatException e) {
-                    System.out.println("Invalid input! Try again!");
+                    System.out.println(INVALID_INPUT);
                     continue;
                 }
                 grid.uncover(x, y);
@@ -77,18 +81,19 @@ public class TerminalGame {
             } else if (input.startsWith("F")) {
                 // Flag
                 String[] parts = input.substring(1).split(",");
-                int x, y;
+                int x;
+                int y;
                 try {
                     x = Integer.parseInt(parts[0]);
                     y = Integer.parseInt(parts[1]);
                 } catch (NumberFormatException e) {
-                    System.out.println("Invalid input! Try again!");
+                    System.out.println(INVALID_INPUT);
                     continue;
                 }
                 grid.flag(x, y);
             } else {
                 // Do nothing...
-                System.out.println("Invalid input! Try again!");
+                System.out.println(INVALID_INPUT);
             }
 
             System.out.println("---------------------------------------------");
