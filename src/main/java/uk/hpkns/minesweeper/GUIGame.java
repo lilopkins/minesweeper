@@ -3,10 +3,7 @@ package uk.hpkns.minesweeper;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -14,8 +11,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Objects;
+import java.util.Optional;
 
 import static uk.hpkns.minesweeper.Grid.NUMBER;
 
@@ -95,17 +95,42 @@ public class GUIGame extends Application {
                         alert.setHeaderText("You lost!");
                         alert.setContentText("BANG! You lost the game!");
                         alert.showAndWait();
+                        return;
                     }
 
                     // End game with win if everything uncovered
                     if (grid.allUncovered()) {
                         gameOver = true;
+                        String leaderboard = "See the leaderboard at hpkns.uk/minesweeper.";
                         long completionTimeMillis = System.currentTimeMillis() - gameStartTime;
+
+                        TextInputDialog nameDlg = new TextInputDialog();
+                        nameDlg.setTitle("Leaderboard");
+                        nameDlg.setHeaderText("Your name");
+                        nameDlg.setContentText("Enter your name for submission to the leaderboard...");
+                        Optional<String> name = nameDlg.showAndWait();
+
+                        if (name.isPresent()) {
+                            try {
+                                URL url = new URL(String.format("https://minesweeper-leaderboard.hpkns.uk/submit/%s/%d", name.get(), completionTimeMillis));
+                                HttpURLConnection http = (HttpURLConnection) url.openConnection();
+                                http.setRequestMethod("POST");
+                                http.setDoOutput(true);
+                                http.getInputStream(); // To send request
+                            } catch (IOException ex) {
+                                // Probably just not online.
+                                leaderboard = "Submission to the leaderboard failed.";
+                            }
+                        } else {
+                            leaderboard += " Your time wasn't submitted.";
+                        }
+
                         Alert alert = new Alert(Alert.AlertType.INFORMATION);
                         alert.setTitle("You won!");
                         alert.setHeaderText("You won!");
-                        alert.setContentText(String.format("You won the game in %.2f seconds!", ((float) completionTimeMillis) / 1000));
+                        alert.setContentText(String.format("You won the game in %.2f seconds! %s", ((float) completionTimeMillis) / 1000, leaderboard));
                         alert.showAndWait();
+                        return;
                     }
                 });
                 btn.setOnContextMenuRequested(e -> {
