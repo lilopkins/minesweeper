@@ -5,24 +5,24 @@ import uk.hpkns.minesweeper.Grid;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class GridTest {
+public class GridTest {
 
     @Test
-    void testCreateSquareGrid() {
+    public void testCreateSquareGrid() {
         Grid grid = new Grid(10);
         assertEquals(10, grid.getWidth(), "correct grid width");
         assertEquals(10, grid.getHeight(), "correct grid height");
     }
 
     @Test
-    void testCreateRectangularGrid() {
+    public void testCreateRectangularGrid() {
         Grid grid = new Grid(20, 10);
         assertEquals(20, grid.getWidth(), "correct grid width");
         assertEquals(10, grid.getHeight(), "correct grid height");
     }
 
     @Test
-    void testCreateRectangularGridWithCustomMines() {
+    public void testCreateRectangularGridWithCustomMines() {
         Grid grid = new Grid(20, 10, 2);
         assertEquals(20, grid.getWidth(), "correct grid width");
         assertEquals(10, grid.getHeight(), "correct grid height");
@@ -42,14 +42,14 @@ class GridTest {
     }
 
     @Test
-    void testUncoverActuallyUncovers() {
+    public void testUncoverActuallyUncovers() {
         Grid grid = new Grid(5);
         grid.uncover(3, 3);
         assertTrue(grid.isUncovered(3, 3), "cell is uncovered");
     }
 
     @Test
-    void testUncoverOutOfGridBoundsThrows() {
+    public void testUncoverOutOfGridBoundsThrows() {
         Grid grid = new Grid(5);
         grid.uncover(0, 0); // To initialise
         assertThrows(Grid.OutOfGridException.class, () -> grid.uncover(6, 0), "throws on x overflow");
@@ -57,7 +57,7 @@ class GridTest {
     }
 
     @Test
-    void testFlagActuallyToggles() {
+    public void testFlagActuallyToggles() {
         Grid grid = new Grid(5);
         grid.uncover(0, 0); // To initialise
         grid.flag(3, 3);
@@ -65,7 +65,7 @@ class GridTest {
     }
 
     @Test
-    void testFlagDoesntToggleUncovered() {
+    public void testFlagDoesntToggleUncovered() {
         Grid grid = new Grid(5);
         grid.uncover(3, 3);
         grid.flag(3, 3);
@@ -73,7 +73,7 @@ class GridTest {
     }
 
     @Test
-    void testFlagOutOfGridBoundsThrows() {
+    public void testFlagOutOfGridBoundsThrows() {
         Grid grid = new Grid(5);
         grid.uncover(0, 0); // To initialise
         assertThrows(Grid.OutOfGridException.class, () -> grid.flag(6, 0), "throws on x overflow");
@@ -81,7 +81,7 @@ class GridTest {
     }
 
     @Test
-    void testUncoverAllMinesUncovers() {
+    public void testUncoverAllMinesUncovers() {
         Grid grid = new Grid(5);
         grid.uncover(0, 0); // To initialise
         grid.uncoverAllMines();
