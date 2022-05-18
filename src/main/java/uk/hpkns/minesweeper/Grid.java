@@ -24,7 +24,7 @@ public class Grid {
     }
 
     public Grid(int width, int height) {
-        this(width, height, width * height / 10);
+        this(width, height, Math.max(width * height / 10, 4));
     }
 
     public Grid(int width, int height, int mines) {
