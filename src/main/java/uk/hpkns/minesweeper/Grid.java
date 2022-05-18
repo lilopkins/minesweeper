@@ -9,9 +9,10 @@ public class Grid {
      */
 
     public static final byte UNCOVERED = 0b0100_0000;
-    public static final byte FLAG      = 0b0010_0000;
+    public static final byte FLAGGED   = 0b0010_0000;
     public static final byte MINE      = 0b0001_0000;
     public static final byte NUMBER    = 0b0000_1111;
+    public static final Random RANDOM = new Random();
 
     private final byte[][] grid;
     private boolean initialised;
@@ -24,7 +25,7 @@ public class Grid {
     }
 
     public Grid(int width, int height) {
-        this(width, height, width * height / 10);
+        this(width, height, Math.max(width * height / 10, 4));
     }
 
     public Grid(int width, int height, int mines) {
@@ -48,13 +49,12 @@ public class Grid {
         initialised = true;
 
         // Randomise mine positions
-        Random rng = new Random();
-
         for (int i = 0; i < mines; i++) {
-            int x, y;
+            int x;
+            int y;
             do {
-                x = rng.nextInt(width);
-                y = rng.nextInt(height);
+                x = RANDOM.nextInt(width);
+                y = RANDOM.nextInt(height);
             } while (x == safeX && y == safeY);
 
             grid[y][x] = MINE;
@@ -105,7 +105,9 @@ public class Grid {
                     if (i == 0 && j == 0) continue;
                     try {
                         uncover(x + i, y + j);
-                    } catch (OutOfGridException ignored) { }
+                    } catch (OutOfGridException ignored) {
+                        // Ignore, just edge of grid
+                    }
                 }
             }
 
@@ -128,9 +130,9 @@ public class Grid {
         if (isUncovered(x, y)) return;
 
         if (isFlagged(x, y))
-            grid[y][x] -= FLAG;
+            grid[y][x] -= FLAGGED;
         else
-            grid[y][x] += FLAG;
+            grid[y][x] += FLAGGED;
     }
 
     /**
@@ -178,7 +180,7 @@ public class Grid {
         if (x < 0 || x >= width) throw new OutOfGridException();
         if (y < 0 || y >= height) throw new OutOfGridException();
 
-        return (grid[y][x] & FLAG) == FLAG;
+        return (grid[y][x] & FLAGGED) == FLAGGED;
     }
 
     /**
