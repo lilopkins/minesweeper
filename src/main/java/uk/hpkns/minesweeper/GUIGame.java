@@ -77,62 +77,7 @@ public class GUIGame extends Application {
                 btn.setMaxWidth(BUTTON_SIZE);
                 int finalX = x;
                 int finalY = y;
-                btn.setOnAction(e -> {
-                    if (gameOver) return;
-                    if (grid.isFlagged(finalX, finalY)) return;
-
-                    if (gameStartTime == 0) gameStartTime = System.currentTimeMillis();
-
-                    grid.uncover(finalX, finalY);
-                    updateButtonGrid();
-                    // End game with loss if finalX, finalY was a mine
-                    if (grid.isMine(finalX, finalY)) {
-                        grid.uncoverAllMines();
-                        updateButtonGrid();
-                        gameOver = true;
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle("You lost!");
-                        alert.setHeaderText("You lost!");
-                        alert.setContentText("BANG! You lost the game!");
-                        alert.showAndWait();
-                        return;
-                    }
-
-                    // End game with win if everything uncovered
-                    if (grid.allUncovered()) {
-                        gameOver = true;
-                        String leaderboard = "See the leaderboard at hpkns.uk/minesweeper.";
-                        long completionTimeMillis = System.currentTimeMillis() - gameStartTime;
-
-                        TextInputDialog nameDlg = new TextInputDialog();
-                        nameDlg.setTitle("Leaderboard");
-                        nameDlg.setHeaderText("Your name");
-                        nameDlg.setContentText("Enter your name for submission to the leaderboard...");
-                        Optional<String> name = nameDlg.showAndWait();
-
-                        if (name.isPresent()) {
-                            try {
-                                URL url = new URL(String.format("https://minesweeper-leaderboard.hpkns.uk/submit/%s/%d", name.get(), completionTimeMillis));
-                                HttpURLConnection http = (HttpURLConnection) url.openConnection();
-                                http.setRequestMethod("POST");
-                                http.setDoOutput(true);
-                                http.getInputStream(); // To send request
-                            } catch (IOException ex) {
-                                // Probably just not online.
-                                leaderboard = "Submission to the leaderboard failed.";
-                            }
-                        } else {
-                            leaderboard += " Your time wasn't submitted.";
-                        }
-
-                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                        alert.setTitle("You won!");
-                        alert.setHeaderText("You won!");
-                        alert.setContentText(String.format("You won the game in %.2f seconds! %s", ((float) completionTimeMillis) / 1000, leaderboard));
-                        alert.showAndWait();
-                        return;
-                    }
-                });
+                btn.setOnAction(e -> buttonAction(finalX, finalY));
                 btn.setOnContextMenuRequested(e -> {
                     grid.flag(finalX, finalY);
                     updateButtonGrid();
@@ -143,6 +88,63 @@ public class GUIGame extends Application {
         }
     }
 
+    private void buttonAction(final int finalX, final int finalY) {
+        if (gameOver) return;
+        if (grid.isFlagged(finalX, finalY)) return;
+
+        if (gameStartTime == 0) gameStartTime = System.currentTimeMillis();
+
+        grid.uncover(finalX, finalY);
+        updateButtonGrid();
+        // End game with loss if finalX, finalY was a mine
+        if (grid.isMine(finalX, finalY)) {
+            grid.uncoverAllMines();
+            updateButtonGrid();
+            gameOver = true;
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("You lost!");
+            alert.setHeaderText("You lost!");
+            alert.setContentText("BANG! You lost the game!");
+            alert.showAndWait();
+            return;
+        }
+
+        // End game with win if everything uncovered
+        if (grid.allUncovered()) {
+            gameOver = true;
+            StringBuilder leaderboard = new StringBuilder("See the leaderboard at hpkns.uk/minesweeper.");
+            long completionTimeMillis = System.currentTimeMillis() - gameStartTime;
+
+            TextInputDialog nameDlg = new TextInputDialog();
+            nameDlg.setTitle("Leaderboard");
+            nameDlg.setHeaderText("Your name");
+            nameDlg.setContentText("Enter your name for submission to the leaderboard...");
+            Optional<String> name = nameDlg.showAndWait();
+
+            if (name.isPresent()) {
+                try {
+                    URL url = new URL(String.format("https://minesweeper-leaderboard.hpkns.uk/submit/%s/%d", name.get(), completionTimeMillis));
+                    HttpURLConnection http = (HttpURLConnection) url.openConnection();
+                    http.setRequestMethod("POST");
+                    http.setDoOutput(true);
+                    http.getInputStream(); // To send request
+                } catch (IOException ex) {
+                    // Probably just not online.
+                    leaderboard.replace(0, leaderboard.length(), "Submission to the leaderboard failed.");
+                }
+            } else {
+                leaderboard.append(" Your time wasn't submitted.");
+            }
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("You won!");
+            alert.setHeaderText("You won!");
+            alert.setContentText(String.format("You won the game in %.2f seconds! %s", ((float) completionTimeMillis) / 1000, leaderboard));
+            alert.showAndWait();
+        }
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
     private void updateButtonGrid() {
         for (int y = 0; y < grid.getHeight(); y++) {
             for (int x = 0; x < grid.getWidth(); x++) {
@@ -150,28 +152,26 @@ public class GUIGame extends Application {
                 btnGrid[y][x].setText(" ");
                 btnGrid[y][x].setGraphic(null);
                 if (grid.isFlagged(x, y)) {
+                    // Render a flag
                     ImageView img = new ImageView(FLAG.toExternalForm());
                     img.setFitWidth(ICON_SIZE);
                     img.setFitHeight(ICON_SIZE);
                     btnGrid[y][x].setGraphic(img);
-                    continue;
-                }
-                if (!grid.isUncovered(x, y)) {
-                    continue;
-                }
-                if (grid.isMine(x, y)) {
+                } else if (!grid.isUncovered(x, y)) {
+                    // Do nothing if it's covered still
+                } else  if (grid.isMine(x, y)) {
                     // Only for uncovered mines on game loss.
                     ImageView img = new ImageView(MINE.toExternalForm());
                     img.setFitWidth(ICON_SIZE);
                     img.setFitHeight(ICON_SIZE);
                     btnGrid[y][x].setGraphic(img);
-                    continue;
-                }
-
-                byte pos = grid.get(x, y);
-                btnGrid[y][x].setDisable(true);
-                if ((pos & NUMBER) != 0) {
-                    btnGrid[y][x].setText(String.format("%d", pos & NUMBER));
+                } else {
+                    // Show the number of the nearest mine, if needed
+                    byte pos = grid.get(x, y);
+                    btnGrid[y][x].setDisable(true);
+                    if ((pos & NUMBER) != 0) {
+                        btnGrid[y][x].setText(String.format("%d", pos & NUMBER));
+                    }
                 }
             }
         }
